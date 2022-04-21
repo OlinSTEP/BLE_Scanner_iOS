@@ -28,7 +28,7 @@ class PeripheralViewController: UIViewController {
     private var centralManager: CBCentralManager!
     private var peripherals = Set<DisplayPeripheral>()
 	private var viewReloadTimer: Timer?
-	
+    private var stepBoard: CBPeripheral?
 	private var selectedPeripheral: CBPeripheral?
     
     var connectingViewController: UIViewController?
@@ -146,6 +146,16 @@ extension PeripheralViewController: CBCentralManagerDelegate{
 	}
 	
 	func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber){
+        if peripheral.name == "STEP_WB55_BREAKOUT" {
+            DispatchQueue.main.async {
+                print("found the STEP board")
+                self.stepBoard = peripheral
+                self.selectedPeripheral = peripheral
+                peripheral.delegate = self
+                self.centralManager.connect(peripheral, options: nil)
+                self.showLoading()
+            }
+        }
 		let isConnectable = advertisementData["kCBAdvDataIsConnectable"] as! Bool
 		let displayPeripheral = DisplayPeripheral(peripheral: peripheral, lastRSSI: RSSI, isConnectable: isConnectable)
 		peripherals.insert(displayPeripheral)

@@ -88,6 +88,19 @@ extension PeripheralConnectedViewController: CBPeripheralDelegate {
 		if let error = error {
 			print("Error discovering service characteristics: \(error.localizedDescription)")
 		}
+        
+        guard service.uuid.uuidString == "183E", let characteristics = service.characteristics else {
+            return
+        }
+        print("service uuid", service.uuid)
+        for characteristic in characteristics {
+            guard characteristic.uuid.uuidString == "1234" else {
+                continue
+            }
+            peripheral.setNotifyValue(true, for: characteristic)
+            print(characteristic.uuid)
+            print(characteristic.isNotifying)
+        }
 		
 		service.characteristics?.forEach({ characteristic in
             if let descriptors = characteristic.descriptors {
@@ -98,6 +111,16 @@ extension PeripheralConnectedViewController: CBPeripheralDelegate {
 		})
 	}
 	
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        guard let bytes = characteristic.value else {
+            return
+        }
+        print("got a new value")
+        for byte in bytes {
+            print(String(format: "%02hhX", byte))
+        }
+    }
+    
 	func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
 		switch RSSI.intValue {
 		case -90 ... -60:
